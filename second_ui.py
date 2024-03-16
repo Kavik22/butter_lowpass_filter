@@ -158,7 +158,7 @@ class Ui_MainWindow(QMainWindow):
                                                                        u"\u041f\u043e\u0441\u0442\u0440\u043e\u0438\u0442\u044c \u0433\u0440\u0430\u0444\u0438\u043a \u0430\u043c\u043f\u043b\u0438\u0442\u0443\u0434\u044b \u043e\u0442 \u0447\u0430\u0441\u0442\u043e\u0442\u044b",
                                                                        None))
         self.frequency_sampling_label.setText(QCoreApplication.translate("MainWindow",
-                                                                         u"<html><head/><body><p><span style=\" font-size:14pt;\">\u0427\u0430\u0441\u0442\u043e\u0442\u0430 \u0434\u0438\u0441\u043a\u0440\u0435\u0442\u0438\u0437\u0430\u0446\u0438\u0438 \u0432 \u0433\u0435\u0440\u0446\u0430\u0445:</span></p></body></html>",
+                                                                         u"<html><head/><body><p><span style=\" font-size:14pt;\">\u0427\u0430\u0441\u0442\u043e\u0442\u0430 \u0434\u0438\u0441\u043a\u0440\u0435\u0442\u0438\u0437\u0430\u0446\u0438\u0438:</span></p></body></html>",
                                                                          None))
         self.at_graph_create_button.setText(QCoreApplication.translate("MainWindow",
                                                                        u"\u041f\u043e\u0441\u0442\u0440\u043e\u0438\u0442\u044c \u0433\u0440\u0430\u0444\u0438\u043a \u0430\u043c\u043f\u043b\u0438\u0442\u0443\u0434\u044b \u043e\u0442 \u0432\u0440\u0435\u043c\u0435\u043d\u0438",
