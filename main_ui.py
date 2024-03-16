@@ -18,7 +18,7 @@ class GraphicWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Butterworth graphic")
-        self.resize(700, 500)
+        self.resize(300, 500)
 
         order_text = parent.order_input.text()
         frequency_text = parent.frequency_input.text()
