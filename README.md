@@ -1,4 +1,4 @@
-main_filter.py - создаёт окно из main_ui.py
+main_filter.py - создаёт основное окно из main_ui.py
 </br>
 main_ui.py - инисиализации всех окон собраны здесь
 </br>
