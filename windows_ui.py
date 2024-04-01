@@ -55,28 +55,27 @@ class ATGraphicWindow(QMainWindow):
 
         order_text = parent.order_input.text()
         frequency_text = parent.frequency_input.text()
-        frequency_sampling_text = parent.frequency_sampling_input.text()
 
-        if str(order_text).isdigit() and str(frequency_text).isdigit() and str(frequency_sampling_text).isdigit():
+        if str(order_text).isdigit() and str(frequency_text).isdigit():
             order = int(order_text)
             frequency = int(frequency_text)
-            frequency_sampling = int(frequency_sampling_text)
+            frequency_sampling = 150
 
             t = np.linspace(0, 1, int(frequency_sampling))
             data = np.sin(2 * np.pi * 100 * t) + 0.7 * np.sin(2 * np.pi * 200 * t)
 
-            def butter_lowpass(cutoff, fs, order=5):
-                nyquist = 0.5 * fs
+            def butter_lowpass(cutoff, order):
+                nyquist = 0.5 * 150
                 normal_cutoff = cutoff / nyquist
                 b, a = signal.butter(order, normal_cutoff, btype='low', analog=True)
                 return b, a
 
-            def butter_lowpass_filter(data, cutoff, fs, order=5):
-                b, a = butter_lowpass(cutoff, fs, order=order)
+            def butter_lowpass_filter(data, cutoff, order):
+                b, a = butter_lowpass(cutoff, order=order)
                 y = signal.lfilter(b, a, data)
                 return y
 
-            filtered_data = butter_lowpass_filter(data, frequency, frequency_sampling, order)
+            filtered_data = butter_lowpass_filter(data, frequency, order)
 
             self.figure = plt.Figure()
             self.canvas = FigureCanvas(self.figure)
@@ -127,12 +126,12 @@ class Ui_MainWindow(QMainWindow):
         self.frequency_input = QLineEdit(self.centralwidget)
         self.frequency_input.setObjectName(u"frequency_input")
         self.frequency_input.setGeometry(QRect(390, 90, 61, 25))
-        self.frequency_sampling_label = QLabel(self.centralwidget)
-        self.frequency_sampling_label.setObjectName(u"frequency_sampling_label")
-        self.frequency_sampling_label.setGeometry(QRect(60, 120, 301, 21))
-        self.frequency_sampling_input = QLineEdit(self.centralwidget)
-        self.frequency_sampling_input.setObjectName(u"frequency_sampling_input")
-        self.frequency_sampling_input.setGeometry(QRect(390, 120, 61, 25))
+        # self.frequency_sampling_label = QLabel(self.centralwidget)
+        # self.frequency_sampling_label.setObjectName(u"frequency_sampling_label")
+        # self.frequency_sampling_label.setGeometry(QRect(60, 120, 301, 21))
+        # self.frequency_sampling_input = QLineEdit(self.centralwidget)
+        # self.frequency_sampling_input.setObjectName(u"frequency_sampling_input")
+        # self.frequency_sampling_input.setGeometry(QRect(390, 120, 61, 25))
         self.at_graph_create_button = QPushButton(self.centralwidget)
         self.at_graph_create_button.setObjectName(u"graph_create_button_2")
         self.at_graph_create_button.setGeometry(QRect(30, 230, 451, 51))
@@ -157,9 +156,9 @@ class Ui_MainWindow(QMainWindow):
         self.af_graph_create_button.setText(QCoreApplication.translate("MainWindow",
                                                                        u"\u041f\u043e\u0441\u0442\u0440\u043e\u0438\u0442\u044c \u0433\u0440\u0430\u0444\u0438\u043a \u0430\u043c\u043f\u043b\u0438\u0442\u0443\u0434\u044b \u043e\u0442 \u0447\u0430\u0441\u0442\u043e\u0442\u044b",
                                                                        None))
-        self.frequency_sampling_label.setText(QCoreApplication.translate("MainWindow",
-                                                                         u"<html><head/><body><p><span style=\" font-size:14pt;\">\u0427\u0430\u0441\u0442\u043e\u0442\u0430 \u0434\u0438\u0441\u043a\u0440\u0435\u0442\u0438\u0437\u0430\u0446\u0438\u0438:</span></p></body></html>",
-                                                                         None))
+        # self.frequency_sampling_label.setText(QCoreApplication.translate("MainWindow",
+        #                                                                  u"<html><head/><body><p><span style=\" font-size:14pt;\">\u0427\u0430\u0441\u0442\u043e\u0442\u0430 \u0434\u0438\u0441\u043a\u0440\u0435\u0442\u0438\u0437\u0430\u0446\u0438\u0438:</span></p></body></html>",
+        #                                                                  None))
         self.at_graph_create_button.setText(QCoreApplication.translate("MainWindow",
                                                                        u"\u041f\u043e\u0441\u0442\u0440\u043e\u0438\u0442\u044c \u0433\u0440\u0430\u0444\u0438\u043a \u0430\u043c\u043f\u043b\u0438\u0442\u0443\u0434\u044b \u043e\u0442 \u0432\u0440\u0435\u043c\u0435\u043d\u0438",
                                                                        None))
