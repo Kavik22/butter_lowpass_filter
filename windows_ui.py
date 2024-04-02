@@ -54,7 +54,7 @@ class CalculationOfElementsWindow(QMainWindow):
         super().__init__(parent)
         self.setWindowTitle("Calculation of elements")
 
-        self.resize(580, 530)
+        self.resize(580, 480)
         self.setStyleSheet(u"background-color:  rgb(200, 200, 200);")
         self.centralwidget = QWidget(self)
         self.centralwidget.setObjectName(u"centralwidget")
@@ -98,12 +98,12 @@ class CalculationOfElementsWindow(QMainWindow):
             self.c_elements_text = QTextEdit(self.centralwidget)
             self.c_elements_text.setPlainText(c_text)
             self.c_elements_text.setReadOnly(True)
-            self.c_elements_text.setGeometry(40, 60, 270, 150)
+            self.c_elements_text.setGeometry(20, 60, 270, 150)
             self.c_elements_text.setFont(QFont("AnyStyle", 14))
             self.l_elements_text = QTextEdit(self.centralwidget)
             self.l_elements_text.setPlainText(l_text)
             self.l_elements_text.setReadOnly(True)
-            self.l_elements_text.setGeometry(300, 60, 270, 150)
+            self.l_elements_text.setGeometry(290, 60, 270, 150)
             self.l_elements_text.setFont(QFont("AnyStyle", 14))
 
             self.order_label = QLabel(self.centralwidget)

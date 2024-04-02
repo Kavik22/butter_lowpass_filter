@@ -30,10 +30,6 @@ def raw_element(n, m):
     raw = 2 * np.sin((2 * m - 1) * np.pi / (2 * n))
     return raw
 
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/main
 def c(n, wc, r, m):
     result = raw_element(n, m) / (r * wc)
     return result
@@ -68,12 +64,3 @@ def elements_for_t_type():
             print(f'C({m}) = {c(n, wc, r, m)}')
 
 
-if __name__ == '__main__':
-    # elements_for_p_type()
-    # print('--------------')
-    # elements_for_t_type()
-<<<<<<< HEAD
-    frequency_response_check()
-=======
-        frequency_response_check()
->>>>>>> origin/main
