@@ -4,13 +4,15 @@ from PyQt5.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
 from PyQt5.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
                          QFont, QFontDatabase, QGradient, QIcon,
                          QImage, QKeySequence, QLinearGradient, QPainter,
-                         QPalette, QPixmap, QRadialGradient, QTransform)
+                         QPalette, QPixmap, QRadialGradient, QTransform, QPixmap)
 from PyQt5.QtWidgets import (QApplication, QLabel, QLineEdit, QMainWindow,
-                             QPushButton, QSizePolicy, QWidget)
+                             QPushButton, QSizePolicy, QWidget, QScrollArea, QTextEdit, QVBoxLayout, QHBoxLayout,
+                             QLayout, QComboBox)
 from scipy import signal
 import numpy as np
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
+from logic import frequency_response, c, l
 
 
 class AFGraphicWindow(QMainWindow):
@@ -20,14 +22,14 @@ class AFGraphicWindow(QMainWindow):
         self.resize(700, 500)
 
         order_text = parent.order_input.text()
-        frequency_text = parent.frequency_input.text()
+        frequency_cutoff_text = parent.frequency_input.text()
 
-        if str(order_text).isdigit() and str(frequency_text).isdigit():
+        if str(order_text).isdigit() and str(frequency_cutoff_text).isdigit():
             order = int(order_text)
-            frequency = int(frequency_text)
+            frequency_cutoff = int(frequency_cutoff_text)
 
-            b, a = signal.butter(order, frequency, 'low', analog=True)
-            w, h = signal.freqs(b, a)
+            frequency = [f for f in range(0, 1500)]
+            amplitude = [20 * np.log10(frequency_response(f, frequency_cutoff, order)) for f in frequency]
 
             self.figure = plt.Figure()
             self.canvas = FigureCanvas(self.figure)
@@ -36,85 +38,126 @@ class AFGraphicWindow(QMainWindow):
 
             ax = self.figure.add_subplot(111)
 
-            ax.semilogx(w, 20 * np.log10(abs(h)))
+            ax.semilogx(frequency, amplitude)
             ax.set_title('Butterworth filter frequency response')
             ax.set_xlabel('Frequency [radians / second]')
             ax.set_ylabel('Amplitude [dB]')
             ax.margins(0, 0.1)
             ax.grid(which='both', axis='both')
-            ax.axvline(frequency, color='green')  # cutoff frequency
+            ax.axvline(frequency_cutoff, color='green')  # cutoff frequency
 
             self.canvas.draw()
 
 
-class ATGraphicWindow(QMainWindow):
+class CalculationOfElementsWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Butterworth graphic")
-        self.resize(700, 500)
+        self.setWindowTitle("Calculation of elements")
+
+        self.resize(580, 530)
+        self.setStyleSheet(u"background-color:  rgb(200, 200, 200);")
+        self.centralwidget = QWidget(self)
+        self.centralwidget.setObjectName(u"centralwidget")
+        self.title = QLabel(self.centralwidget)
+        self.title.setObjectName(u"title")
+        self.title.setGeometry(QRect(30, 10, 520, 31))
 
         order_text = parent.order_input.text()
-        frequency_text = parent.frequency_input.text()
+        frequency_cutoff_text = parent.frequency_input.text()
+        resist_input_text = parent.resist_input.text()
+        schema_type = parent.schema_type_input.currentText()
 
-        if str(order_text).isdigit() and str(frequency_text).isdigit():
+        if str(order_text).isdigit() and str(frequency_cutoff_text).isdigit() and str(resist_input_text).isdigit():
             order = int(order_text)
-            frequency = int(frequency_text)
-            frequency_sampling = 150
+            frequency_cutoff = int(frequency_cutoff_text)
+            resist = int(resist_input_text)
+            wc = 2 * np.pi * frequency_cutoff
 
-            t = np.linspace(0, 1, int(frequency_sampling))
-            data = np.sin(2 * np.pi * 100 * t) + 0.7 * np.sin(2 * np.pi * 200 * t)
+            c_array = []
+            l_array = []
 
-            def butter_lowpass(cutoff, order):
-                nyquist = 0.5 * 150
-                normal_cutoff = cutoff / nyquist
-                b, a = signal.butter(order, normal_cutoff, btype='low', analog=True)
-                return b, a
 
-            def butter_lowpass_filter(data, cutoff, order):
-                b, a = butter_lowpass(cutoff, order=order)
-                y = signal.lfilter(b, a, data)
-                return y
+            for m in range(1, order + 1):
+                if m % 2 == 0 and schema_type == 'П-образная' or m % 2 and schema_type == 't':
+                    l_array.append(f'L({m}) = {"{:.3e}".format(l(order, wc, resist, m))}')
+                else:
+                    c_array.append(f'C({m}) = {"{:.3e}".format(c(order, wc, resist, m))}')
 
-            filtered_data = butter_lowpass_filter(data, frequency, order)
+            l_text = '\n'.join(l_array)
+            c_text = '\n'.join(c_array)
 
-            self.figure = plt.Figure()
-            self.canvas = FigureCanvas(self.figure)
-            self.setCentralWidget(self.canvas)
-            self.figure.clear()
+            self.c_elements_text = QTextEdit(self.centralwidget)
+            self.c_elements_text.setPlainText(c_text)
+            self.c_elements_text.setReadOnly(True)
+            self.c_elements_text.setGeometry(40, 60, 250, 150)
+            self.c_elements_text.setFont(QFont("AnyStyle", 14))
+            self.l_elements_text = QTextEdit(self.centralwidget)
+            self.l_elements_text.setPlainText(l_text)
+            self.l_elements_text.setReadOnly(True)
+            self.l_elements_text.setGeometry(290, 60, 250, 150)
+            self.l_elements_text.setFont(QFont("AnyStyle", 14))
 
-            ax = self.figure.add_subplot(111)
+            self.order_label = QLabel(self.centralwidget)
+            self.order_label.setObjectName(u"order_label")
+            self.order_label.setGeometry(QRect(40, 230, 500, 21))
+            self.order_label.setText(f'Порядок фильтра: {order}')
+            self.order_label.setFont(QFont("AnyStyle", 14))
+            self.frequency_label = QLabel(self.centralwidget)
+            self.frequency_label.setObjectName(u"frequency_label")
+            self.frequency_label.setGeometry(QRect(40, 260, 500, 21))
+            self.frequency_label.setText(f'Частота среза в Герцах: {frequency_cutoff}')
+            self.frequency_label.setFont(QFont("AnyStyle", 14))
+            self.resist_label = QLabel(self.centralwidget)
+            self.resist_label.setObjectName(u"resist_label")
+            self.resist_label.setGeometry(QRect(40, 290, 500, 21))
+            self.resist_label.setText(f'Сопротивление в Омах: {resist}')
+            self.resist_label.setFont(QFont("AnyStyle", 14))
+            self.schema_type_label = QLabel(self.centralwidget)
+            self.schema_type_label.setObjectName(u"schema_type_label")
+            self.schema_type_label.setGeometry(QRect(40, 320, 500, 21))
+            self.schema_type_label.setText(f'Тип схемы: {schema_type}')
+            self.schema_type_label.setFont(QFont("AnyStyle", 14))
 
-            ax.plot(t, data, 'b-', label='Original signal')
-            ax.plot(t, filtered_data, 'r-', linewidth=2, label='Filtered signal')
-            ax.set_xlabel('Time [second]')
-            ax.set_ylabel('Amplitude [dB]')
-            ax.set_title('Butterworth low pass filter')
-            ax.legend()
-            ax.grid(which='both', axis='both')
+            self.image_label = QLabel(self.centralwidget)
+            if schema_type == 'П-образная':
+                pixmap = QPixmap('Tscheme.png')
+            else:
+                pixmap = QPixmap('Pscheme.png')
+            self.image_label.setPixmap(pixmap)
+            self.image_label.setScaledContents(True)
+            self.image_label.setGeometry(30, 350, int(pixmap.width() / 3), int(pixmap.height() / 3))
 
-            self.canvas.draw()
+        self.setCentralWidget(self.centralwidget)
+
+        self.retranslateUi(self)
+
+    def retranslateUi(self, MainWindow):
+        MainWindow.setWindowTitle(QCoreApplication.translate("CalculationOfElements", u"CalculationOfElements", None))
+        self.title.setText(QCoreApplication.translate("MainWindow",
+                                                      u"<html><head/><body><p><span style=\" font-size:20pt;\">\u0420\u0430\u0441\u0441\u0447\u0438\u0442\u0430\u043D\u043D\u044B\u0435\u0020\u0437\u043D\u0430\u0447\u0435\u043D\u0438\u044F\u0020\u044D\u043B\u0435\u043C\u0435\u043D\u0442\u043E\u0432\u0020\u0446\u0435\u043F\u0438</span></p></body></html>",
+                                                      None))
 
 
 class Ui_MainWindow(QMainWindow):
     def __init__(self):
         super(Ui_MainWindow, self).__init__()
 
-        self.resize(512, 314)
+        self.resize(570, 334)
         self.setStyleSheet(u"background-color:  rgb(200, 200, 200);")
         self.centralwidget = QWidget(self)
         self.centralwidget.setObjectName(u"centralwidget")
         self.order_label = QLabel(self.centralwidget)
         self.order_label.setObjectName(u"order_label")
-        self.order_label.setGeometry(QRect(60, 60, 171, 21))
+        self.order_label.setGeometry(QRect(40, 60, 171, 21))
         self.frequency_label = QLabel(self.centralwidget)
         self.frequency_label.setObjectName(u"frequency_label")
-        self.frequency_label.setGeometry(QRect(60, 90, 211, 21))
+        self.frequency_label.setGeometry(QRect(40, 90, 211, 21))
         self.title = QLabel(self.centralwidget)
         self.title.setObjectName(u"title")
-        self.title.setGeometry(QRect(30, 10, 451, 31))
+        self.title.setGeometry(QRect(60, 10, 451, 31))
         self.af_graph_create_button = QPushButton(self.centralwidget)
         self.af_graph_create_button.setObjectName(u"graph_create_button")
-        self.af_graph_create_button.setGeometry(QRect(30, 170, 451, 51))
+        self.af_graph_create_button.setGeometry(QRect(60, 190, 451, 51))
         self.af_graph_create_button.clicked.connect(self.create_af_graphic_window)
         font = QFont()
         font.setPointSize(16)
@@ -122,22 +165,32 @@ class Ui_MainWindow(QMainWindow):
         self.af_graph_create_button.setFont(font)
         self.order_input = QLineEdit(self.centralwidget)
         self.order_input.setObjectName(u"order_input")
-        self.order_input.setGeometry(QRect(390, 60, 61, 25))
+        self.order_input.setGeometry(QRect(470, 60, 61, 25))
         self.frequency_input = QLineEdit(self.centralwidget)
         self.frequency_input.setObjectName(u"frequency_input")
-        self.frequency_input.setGeometry(QRect(390, 90, 61, 25))
-        # self.frequency_sampling_label = QLabel(self.centralwidget)
-        # self.frequency_sampling_label.setObjectName(u"frequency_sampling_label")
-        # self.frequency_sampling_label.setGeometry(QRect(60, 120, 301, 21))
-        # self.frequency_sampling_input = QLineEdit(self.centralwidget)
-        # self.frequency_sampling_input.setObjectName(u"frequency_sampling_input")
-        # self.frequency_sampling_input.setGeometry(QRect(390, 120, 61, 25))
-        self.at_graph_create_button = QPushButton(self.centralwidget)
-        self.at_graph_create_button.setObjectName(u"graph_create_button_2")
-        self.at_graph_create_button.setGeometry(QRect(30, 230, 451, 51))
-        self.at_graph_create_button.setFont(font)
-        self.at_graph_create_button.clicked.connect(self.create_at_graphic_window)
+        self.frequency_input.setGeometry(QRect(470, 90, 61, 25))
+        self.resist_label = QLabel(self.centralwidget)
+        self.resist_label.setObjectName(u"frequency_sampling_label")
+        self.resist_label.setGeometry(QRect(40, 120, 421, 21))
+        self.resist_input = QLineEdit(self.centralwidget)
+        self.resist_input.setObjectName(u"frequency_sampling_input")
+        self.resist_input.setGeometry(QRect(470, 120, 61, 25))
+        self.calculate_of_elements_create_button = QPushButton(self.centralwidget)
+        self.calculate_of_elements_create_button.setObjectName(u"calculate_of_elements_create_button")
+        self.calculate_of_elements_create_button.setGeometry(QRect(60, 250, 451, 51))
+        self.calculate_of_elements_create_button.setFont(font)
+        self.calculate_of_elements_create_button.clicked.connect(self.calculate_of_elements_window)
 
+        self.schema_type_label = QLabel(self.centralwidget)
+        self.schema_type_label.setObjectName(u"order_label")
+        self.schema_type_label.setGeometry(QRect(40, 150, 421, 21))
+        self.schema_type_label.setText(f'Тип схемы:')
+        self.schema_type_label.setFont(QFont("AnyStyle", 14))
+        self.schema_type_input = QComboBox(self.centralwidget)
+        self.schema_type_input.addItem('П-образная')
+        self.schema_type_input.addItem('T-образная')
+        self.schema_type_input.setGeometry(160, 150, 120, 25)
+        self.schema_type_input.setCurrentIndex(0)
         self.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(self)
@@ -148,7 +201,7 @@ class Ui_MainWindow(QMainWindow):
                                                             u"<html><head/><body><p><span style=\" font-size:14pt;\">\u041f\u043e\u0440\u044f\u0434\u043e\u043a \u0444\u0438\u043b\u044c\u0442\u0440\u0430:</span></p></body></html>",
                                                             None))
         self.frequency_label.setText(QCoreApplication.translate("MainWindow",
-                                                                u"<html><head/><body><p><span style=\" font-size:14pt;\">\u0427\u0430\u0441\u0442\u043e\u0442\u0430 \u0441\u0440\u0435\u0437\u0430 \u0432 \u0433\u0435\u0440\u0446\u0430\u0445:</span></p></body></html>",
+                                                                u"<html><head/><body><p><span style=\" font-size:14pt;\">\u0427\u0430\u0441\u0442\u043E\u0442\u0430\u0020\u0441\u0440\u0435\u0437\u0430\u0020\u0432\u0020\u0413\u0435\u0440\u0446\u0430\u0445:</span></p></body></html>",
                                                                 None))
         self.title.setText(QCoreApplication.translate("MainWindow",
                                                       u"<html><head/><body><p><span style=\" font-size:20pt;\">\u0424\u0438\u043b\u044c\u0442\u0440 \u043d\u0438\u0437\u043a\u0438\u0445 \u0447\u0430\u0441\u0442\u043e\u0442 \u0411\u0430\u0442\u0442\u0435\u0440\u0432\u043e\u0440\u0442\u0430</span></p></body></html>",
@@ -156,17 +209,17 @@ class Ui_MainWindow(QMainWindow):
         self.af_graph_create_button.setText(QCoreApplication.translate("MainWindow",
                                                                        u"\u041f\u043e\u0441\u0442\u0440\u043e\u0438\u0442\u044c \u0433\u0440\u0430\u0444\u0438\u043a \u0430\u043c\u043f\u043b\u0438\u0442\u0443\u0434\u044b \u043e\u0442 \u0447\u0430\u0441\u0442\u043e\u0442\u044b",
                                                                        None))
-        # self.frequency_sampling_label.setText(QCoreApplication.translate("MainWindow",
-        #                                                                  u"<html><head/><body><p><span style=\" font-size:14pt;\">\u0427\u0430\u0441\u0442\u043e\u0442\u0430 \u0434\u0438\u0441\u043a\u0440\u0435\u0442\u0438\u0437\u0430\u0446\u0438\u0438:</span></p></body></html>",
-        #                                                                  None))
-        self.at_graph_create_button.setText(QCoreApplication.translate("MainWindow",
-                                                                       u"\u041f\u043e\u0441\u0442\u0440\u043e\u0438\u0442\u044c \u0433\u0440\u0430\u0444\u0438\u043a \u0430\u043c\u043f\u043b\u0438\u0442\u0443\u0434\u044b \u043e\u0442 \u0432\u0440\u0435\u043c\u0435\u043d\u0438",
-                                                                       None))
+        self.resist_label.setText(QCoreApplication.translate("MainWindow",
+                                                             u"<html><head/><body><p><span style=\" font-size:14pt;\">\u0421\u043E\u043F\u0440\u043E\u0442\u0438\u0432\u043B\u0435\u043D\u0438\u0435\u0020\u043D\u0430\u0433\u0440\u0443\u0437\u043A\u0438\u0020\u0438\u0020\u0438\u0441\u0442\u043E\u0447\u043D\u0438\u043A\u0430\u0020\u0432\u0020\u041E\u043C\u0430\u0445:</span></p></body></html>",
+                                                             None))
+        self.calculate_of_elements_create_button.setText(QCoreApplication.translate("MainWindow",
+                                                                                    u"\u0420\u0430\u0441\u0441\u0447\u0438\u0442\u0430\u0442\u044C\u0020\u0437\u043D\u0430\u0447\u0435\u043D\u0438\u044F\u0020\u044D\u043B\u0435\u043C\u0435\u043D\u0442\u043E\u0432\u0020\u0446\u0435\u043F\u0438",
+                                                                                    None))
 
     def create_af_graphic_window(self):
         self.window = AFGraphicWindow(self)
         self.window.show()
 
-    def create_at_graphic_window(self):
-        self.window = ATGraphicWindow(self)
+    def calculate_of_elements_window(self):
+        self.window = CalculationOfElementsWindow(self)
         self.window.show()
