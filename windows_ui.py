@@ -76,12 +76,21 @@ class CalculationOfElementsWindow(QMainWindow):
             c_array = []
             l_array = []
 
-
             for m in range(1, order + 1):
-                if m % 2 == 0 and schema_type == 'П-образная' or m % 2 and schema_type == 't':
-                    l_array.append(f'L({m}) = {"{:.3e}".format(l(order, wc, resist, m))}')
+                if m % 2 == 0 and schema_type == 'П-образная' or m % 2 != 0 and schema_type == 'T-образная':
+                    l_temp = l(order, wc, resist, m)
+                    power = int(np.log10(l_temp))
+                    if power < 0:
+                        l_array.append(f'L({m}) = {np.round(l_temp / 10 ** (power - 1), 3)} * 10^{power - 1} Гн')
+                    else:
+                        l_array.append(f'L({m}) = {np.round(l_temp, 3)} Гн')
                 else:
-                    c_array.append(f'C({m}) = {"{:.3e}".format(c(order, wc, resist, m))}')
+                    c_temp = c(order, wc, resist, m)
+                    power = int(np.log10(c_temp))
+                    if power < 0:
+                        c_array.append(f'C({m}) = {np.round(c_temp / 10 ** (power - 1), 3)} * 10^{power - 1} Ф')
+                    else:
+                        c_array.append(f'C({m}) = {np.round(c_temp, 3)} Ф')
 
             l_text = '\n'.join(l_array)
             c_text = '\n'.join(c_array)
@@ -89,12 +98,12 @@ class CalculationOfElementsWindow(QMainWindow):
             self.c_elements_text = QTextEdit(self.centralwidget)
             self.c_elements_text.setPlainText(c_text)
             self.c_elements_text.setReadOnly(True)
-            self.c_elements_text.setGeometry(40, 60, 250, 150)
+            self.c_elements_text.setGeometry(40, 60, 270, 150)
             self.c_elements_text.setFont(QFont("AnyStyle", 14))
             self.l_elements_text = QTextEdit(self.centralwidget)
             self.l_elements_text.setPlainText(l_text)
             self.l_elements_text.setReadOnly(True)
-            self.l_elements_text.setGeometry(290, 60, 250, 150)
+            self.l_elements_text.setGeometry(300, 60, 270, 150)
             self.l_elements_text.setFont(QFont("AnyStyle", 14))
 
             self.order_label = QLabel(self.centralwidget)
@@ -120,9 +129,9 @@ class CalculationOfElementsWindow(QMainWindow):
 
             self.image_label = QLabel(self.centralwidget)
             if schema_type == 'П-образная':
-                pixmap = QPixmap('Tscheme.png')
-            else:
                 pixmap = QPixmap('Pscheme.png')
+            else:
+                pixmap = QPixmap('Tscheme.png')
             self.image_label.setPixmap(pixmap)
             self.image_label.setScaledContents(True)
             self.image_label.setGeometry(30, 350, int(pixmap.width() / 3), int(pixmap.height() / 3))
