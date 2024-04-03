@@ -7,8 +7,7 @@ from PyQt5.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
                          QPalette, QPixmap, QRadialGradient, QTransform, QPixmap)
 from PyQt5.QtWidgets import (QApplication, QLabel, QLineEdit, QMainWindow,
                              QPushButton, QSizePolicy, QWidget, QScrollArea, QTextEdit, QVBoxLayout, QHBoxLayout,
-                             QLayout, QComboBox)
-from scipy import signal
+                             QLayout, QComboBox, QTabWidget)
 import numpy as np
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
@@ -152,19 +151,34 @@ class Manual_Window(QMainWindow):
         super().__init__(parent)
         self.setWindowTitle("Инструкция по эксплуатации")
 
-        pixmap = QPixmap('Manual.jpg')
+        pixmap_user_guide = QPixmap('userguide.png')
 
-        self.resize(int(pixmap.width() / 1.5), int(pixmap.height() / 1.5))
-        self.setStyleSheet(u"background-color:  rgb(200, 200, 200);")
+        self.resize(1333, 753)
+        self.setStyleSheet(u"background-color:  rgb(255, 255, 255);")
         self.centralwidget = QWidget(self)
         self.centralwidget.setObjectName(u"centralwidget")
 
+        self.user_guide_image_label = QLabel(self.centralwidget)
+        self.user_guide_image_label.setPixmap(pixmap_user_guide)
+        self.user_guide_image_label.setScaledContents(True)
+        self.user_guide_image_label.setFixedSize(int(pixmap_user_guide.width() / 1.5), int(pixmap_user_guide.height() / 1.5))
+        # self.image_label.setGeometry(0, 0, int(pixmap.width() / 1.5), int(pixmap.height() / 1.5))
+
+        pixmap_second = QPixmap('info.png')
         self.image_label = QLabel(self.centralwidget)
-        self.image_label.setPixmap(pixmap)
+        self.image_label.setPixmap(pixmap_second)
         self.image_label.setScaledContents(True)
-        self.image_label.setGeometry(0, 0, int(pixmap.width() / 1.5), int(pixmap.height() / 1.5))
+        self.image_label.setFixedSize(int(pixmap_second.width() / 1.5), int(pixmap_second.height() / 1.5))
+
+        self.tabs = QTabWidget(self.centralwidget)
+        self.tabs.addTab(self.user_guide_image_label, 'Пользовательская инструкция')
+        self.tabs.addTab(self.image_label, 'Принципы рассчёта АЧХ и значений элементов цепи')
+
 
         self.setCentralWidget(self.centralwidget)
+
+
+
 
 
 
