@@ -152,7 +152,7 @@ class Manual_Window(QMainWindow):
         super().__init__(parent)
         self.setWindowTitle("Инструкция по эксплуатации")
 
-        pixmap = QPixmap('Manual.jpg')
+        pixmap = QPixmap('userguide.png')
 
         self.resize(int(pixmap.width() / 1.5), int(pixmap.height() / 1.5))
         self.setStyleSheet(u"background-color:  rgb(200, 200, 200);")
