@@ -18,7 +18,7 @@ from logic import frequency_response, c, l
 class AFGraphicWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Butterworth graphic")
+        self.setWindowTitle("Frequency response graphic")
         self.resize(700, 500)
 
         order_text = parent.order_input.text()
@@ -147,6 +147,27 @@ class CalculationOfElementsWindow(QMainWindow):
                                                       None))
 
 
+class Manual_Window(QMainWindow):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Инструкция по эксплуатации")
+
+        pixmap = QPixmap('Manual.jpg')
+
+        self.resize(int(pixmap.width() / 1.5), int(pixmap.height() / 1.5))
+        self.setStyleSheet(u"background-color:  rgb(200, 200, 200);")
+        self.centralwidget = QWidget(self)
+        self.centralwidget.setObjectName(u"centralwidget")
+
+        self.image_label = QLabel(self.centralwidget)
+        self.image_label.setPixmap(pixmap)
+        self.image_label.setScaledContents(True)
+        self.image_label.setGeometry(0, 0, int(pixmap.width() / 1.5), int(pixmap.height() / 1.5))
+
+        self.setCentralWidget(self.centralwidget)
+
+
+
 class Ui_MainWindow(QMainWindow):
     def __init__(self):
         super(Ui_MainWindow, self).__init__()
@@ -163,11 +184,17 @@ class Ui_MainWindow(QMainWindow):
         self.frequency_label.setGeometry(QRect(40, 90, 211, 21))
         self.title = QLabel(self.centralwidget)
         self.title.setObjectName(u"title")
-        self.title.setGeometry(QRect(60, 10, 451, 31))
+        self.title.setGeometry(QRect(40, 10, 451, 31))
         self.af_graph_create_button = QPushButton(self.centralwidget)
         self.af_graph_create_button.setObjectName(u"graph_create_button")
         self.af_graph_create_button.setGeometry(QRect(60, 190, 451, 51))
         self.af_graph_create_button.clicked.connect(self.create_af_graphic_window)
+        self.manual_button = QPushButton(self.centralwidget)
+        self.manual_button.setObjectName(u"manual_button")
+        self.manual_button.setGeometry(QRect(500, 10, 30, 30))
+        self.manual_button.clicked.connect(self.manual_window)
+        self.manual_button.setText('?')
+        self.manual_button.setFont(QFont('AnyStyle', 16))
         font = QFont()
         font.setPointSize(16)
         font.setItalic(False)
@@ -231,4 +258,8 @@ class Ui_MainWindow(QMainWindow):
 
     def calculate_of_elements_window(self):
         self.window = CalculationOfElementsWindow(self)
+        self.window.show()
+
+    def manual_window(self):
+        self.window = Manual_Window(self)
         self.window.show()
