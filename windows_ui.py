@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import (QApplication, QLabel, QLineEdit, QMainWindow,
 import numpy as np
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
-from logic import frequency_response, c, l
+from logic import amplitude_frequency_response, phase_frequency_response, c, l
 
 
 class AFGraphicWindow(QMainWindow):
@@ -27,8 +27,8 @@ class AFGraphicWindow(QMainWindow):
             order = int(order_text)
             frequency_cutoff = int(frequency_cutoff_text)
 
-            frequency = [f for f in range(0, 1500)]
-            amplitude = [20 * np.log10(frequency_response(f, frequency_cutoff, order)) for f in frequency]
+            frequency = [f for f in range(0, frequency_cutoff**2)]
+            amplitude = [20 * np.log10(amplitude_frequency_response(f, frequency_cutoff, order)) for f in frequency]
 
             self.figure = plt.Figure()
             self.canvas = FigureCanvas(self.figure)
@@ -47,6 +47,38 @@ class AFGraphicWindow(QMainWindow):
 
             self.canvas.draw()
 
+class PFGraphicWindow(QMainWindow):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Phase frequency response graphic")
+        self.resize(700, 500)
+
+        order_text = parent.order_input.text()
+        frequency_cutoff_text = parent.frequency_input.text()
+
+        if str(order_text).isdigit() and str(frequency_cutoff_text).isdigit():
+            order = int(order_text)
+            frequency_cutoff = int(frequency_cutoff_text)
+
+            frequency = [f for f in range(0, frequency_cutoff*3)]
+            phase = [phase_frequency_response(f, frequency_cutoff, order) for f in frequency]
+
+            self.figure = plt.Figure()
+            self.canvas = FigureCanvas(self.figure)
+            self.setCentralWidget(self.canvas)
+            self.figure.clear()
+
+            ax = self.figure.add_subplot(111)
+
+            ax.plot(frequency, phase)
+            ax.set_title('Butterworth filter frequency response')
+            ax.set_xlabel('Frequency')
+            ax.set_ylabel('Phase')
+            ax.margins(0, 0.1)
+            ax.grid(which='both', axis='both')
+            # ax.axvline(frequency_cutoff, color='green')  # cutoff frequency
+
+            self.canvas.draw()
 
 class CalculationOfElementsWindow(QMainWindow):
     def __init__(self, parent=None):
@@ -186,7 +218,7 @@ class Ui_MainWindow(QMainWindow):
     def __init__(self):
         super(Ui_MainWindow, self).__init__()
 
-        self.resize(570, 334)
+        self.resize(570, 394)
         self.setStyleSheet(u"background-color:  rgb(200, 200, 200);")
         self.centralwidget = QWidget(self)
         self.centralwidget.setObjectName(u"centralwidget")
@@ -227,9 +259,18 @@ class Ui_MainWindow(QMainWindow):
         self.resist_input.setGeometry(QRect(470, 120, 61, 25))
         self.calculate_of_elements_create_button = QPushButton(self.centralwidget)
         self.calculate_of_elements_create_button.setObjectName(u"calculate_of_elements_create_button")
-        self.calculate_of_elements_create_button.setGeometry(QRect(60, 250, 451, 51))
+        self.calculate_of_elements_create_button.setGeometry(QRect(60, 310, 451, 51))
         self.calculate_of_elements_create_button.setFont(font)
         self.calculate_of_elements_create_button.clicked.connect(self.calculate_of_elements_window)
+
+
+        self.pf_graph_create_button = QPushButton(self.centralwidget)
+        self.pf_graph_create_button.setObjectName(u"calculate_of_elements_create_button")
+        self.pf_graph_create_button.setGeometry(QRect(60, 250, 451, 51))
+        self.pf_graph_create_button.setFont(font)
+        self.pf_graph_create_button.setText('Построить график фазы от частоты')
+        self.pf_graph_create_button.clicked.connect(self.create_pf_graphic_window)
+
 
         self.schema_type_label = QLabel(self.centralwidget)
         self.schema_type_label.setObjectName(u"order_label")
@@ -268,6 +309,10 @@ class Ui_MainWindow(QMainWindow):
 
     def create_af_graphic_window(self):
         self.window = AFGraphicWindow(self)
+        self.window.show()
+
+    def create_pf_graphic_window(self):
+        self.window = PFGraphicWindow(self)
         self.window.show()
 
     def calculate_of_elements_window(self):
