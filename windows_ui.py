@@ -60,7 +60,7 @@ class PFGraphicWindow(QMainWindow):
             order = int(order_text)
             frequency_cutoff = int(frequency_cutoff_text)
 
-            frequency = [f for f in range(0, frequency_cutoff*3)]
+            frequency = [f for f in range(1, frequency_cutoff*3)]
             phase = [phase_frequency_response(f, frequency_cutoff, order) for f in frequency]
 
             self.figure = plt.Figure()

@@ -50,11 +50,11 @@ def elements_for_t_type():
 
 
 def phase_frequency_response(f, fc, n):
-    phase = (1 / math.sqrt(1 + (f / fc) ** (2 * n)))
+    phase = -np.arctan((f / fc) ** (2 * n))
     return phase
 
 # frequency_cutoff = 500
-# order = 4
+# order = 4Ы
 #
 # frequency = [f for f in range(0, 1500)]
 # amplitude = [phase_frequency_response(f, frequency_cutoff, order) for f in frequency]
